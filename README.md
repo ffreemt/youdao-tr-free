@@ -1,6 +1,6 @@
 # youdao-tr-free
 
-Google translate for free -- local cache. Let's hope it lasts.
+Youdao translate for free -- local cache. Let's hope it lasts.
 ### Limitation
 Maximum of 50 characters per query -- you'll have to do some processing if you want to handle longer text.
 
