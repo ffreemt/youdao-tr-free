@@ -173,13 +173,13 @@ def test_random():
     assert youdao_tr(text)[:2] in ['测试', '实验']
 
 
-def pressure_tests():
+def pressure_test():
     '''pressure tests'''
     from sys import maxsize
     from random import randint
     from tqdm import trange
 
-    for _ in tragen(50):
+    for _ in trange(50):
         text = 'test ' + str(randint(0, maxsize))
         assert youdao_tr(text)[:2] in ['测试', ]
 
