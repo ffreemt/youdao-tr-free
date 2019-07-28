@@ -12,7 +12,7 @@ name = """youdao-tr-free"""
 description = name.replace('-tr-', 'translate for')
 dir_name, = find_packages()
 
-version, = re.findall(r"__version__\W*=\W*'([^']+)'", open(Path(__file__).parent / f'{dir_name}/__init__.py').read())
+version, = re.findall(r"\n__version__\W*=\W*'([^']+)'", open(Path(__file__).parent / f'{dir_name}/__init__.py').read())
 
 README_rst = f'{Path(__file__).parent}/README.md'
 long_description = open(README_rst, encoding='utf-8').read() if Path(README_rst).exists() else ''
