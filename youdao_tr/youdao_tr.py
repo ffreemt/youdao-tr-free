@@ -1,5 +1,4 @@
-'''
-youdao translate for free
+'''youdao translate for free as in beer
 
 limited to maximum of 50 chars
 '''
@@ -63,13 +62,56 @@ ERRORCODE = {
     '50': "无效的key",
     '60': "无词典结果，仅在获取词典结果生效",
     }
+
+
+def make_throttle_hook(timeout=0.67, exempt=1000):
+    """
+    Returns a response hook function which sleeps for `timeout` seconds if
+    response is not cached
+
+    the first exempt calls exempted from throttling
+    """
+
+    try:
+        timeout = float(timeout)
+    except Exception as _:
+        timeout = .67
+
+    try:
+        exempt = int(exempt)
+    except Exception as _:
+        exempt = 100
+
+    def hook(response, *args, **kwargs):  # pylint: disable=unused-argument
+        if not getattr(response, 'from_cache', False):
+            timeout_ = timeout + random() - 0.5
+            timeout_ = max(0, timeout_)
+
+            try:
+                hook.flag
+            except AttributeError:
+                hook.flag = -1
+            finally:
+                hook.flag += 1
+                quo, _ = divmod(hook.flag, exempt)
+            # quo is 0 only for the first exempt calls
+
+            LOGGER.debug('avg delay: %s, sleeping %s s, flag: %s', timeout, timeout_, bool(quo))
+
+            # will not sleep (timeout_ * bool(quo)=0) for the first exempt calls
+            sleep(timeout_ * bool(quo))
+
+        return response
+    return hook
+
+
 SESS = requests_cache.CachedSession(
     cache_name=CACHE_NAME,
     expire_after=EXPIRE_AFTER,
     allowable_methods=('GET', 'POST'),
 )
 
-# SESS.hooks = {'response': make_throttle_hook(.3)}
+SESS.hooks = {'response': make_throttle_hook()}
 
 def youdao_tr(  # pylint: disable=too-many-locals
         text,
@@ -141,47 +183,6 @@ def youdao_tr(  # pylint: disable=too-many-locals
         LOGGER.error(exc)
         res = str(exc)
     return ''.join(res)
-
-
-def make_throttle_hook(timeout=0.67, exempt=1000):
-    """
-    Returns a response hook function which sleeps for `timeout` seconds if
-    response is not cached
-
-    the first exempt calls exempted from throttling
-    """
-
-    try:
-        timeout = float(timeout)
-    except Exception as _:
-        timeout = .67
-
-    try:
-        exempt = int(exempt)
-    except Exception as _:
-        exempt = 100
-
-    def hook(response, *args, **kwargs):  # pylint: disable=unused-argument
-        if not getattr(response, 'from_cache', False):
-            timeout_ = timeout + random() - 0.5
-            timeout_ = max(0, timeout_)
-
-            try:
-                hook.flag
-            except AttributeError:
-                hook.flag = -1
-            finally:
-                hook.flag += 1
-                quo, _ = divmod(hook.flag, exempt)
-            # quo is 0 only for the first exempt calls
-
-            LOGGER.debug('avg delay: %s, sleeping %s s, flag: %s', timeout, timeout_, bool(quo))
-
-            # will not sleep (timeout_ * bool(quo)=0) for the first exempt calls
-            sleep(timeout_ * bool(quo))
-
-        return response
-    return hook
 
 
 def test_empty():
