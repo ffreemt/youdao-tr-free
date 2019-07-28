@@ -1,6 +1,6 @@
 # youdao-tr-free
 
-Youdao translate for free -- local cache. Let's hope it lasts.
+Youdao translate for free -- local cache and throttling (averag 1.5 calls/s, first 1000 calls exempted). Let's hope it lasts.
 ### Limitation
 Maximum of 50 characters per query -- you'll have to do some processing if you want to handle longer text.
 
