@@ -121,6 +121,9 @@ def youdao_tr(  # pylint: disable=too-many-locals
     ):
     '''
     youdao translate
+
+    text = 'test 123'
+    from_lang='zh'; to_lang='en';timeout=(55, 66)
     '''
     text = text.strip()
     if not text:
@@ -131,6 +134,11 @@ def youdao_tr(  # pylint: disable=too-many-locals
     salt = str(len(text))
     sign = hashlib.md5(('fanyideskweb' + text \
     + salt + APID).encode('utf-8')).hexdigest()
+
+    if from_lang in ['zh', 'zh_cn', ]:
+        from_lang = 'zh-CHS'
+    if to_lang in ['zh', ]:
+        to_lang = 'zh-CHS'
 
     data = {
         'i': text,
@@ -174,14 +182,22 @@ def youdao_tr(  # pylint: disable=too-many-locals
     tr_res = jdata.get('translateResult')
 
     if not str(jdata): # pragma: no cover
-        return str(jdata)
+        LOGGER.warning('No valid data: maybe bacause free quota exceeded or IP blocked: %s', str(jdata)[:200])
+        # return str(jdata)
+        LOGGER.warning('Returning empty string ['']')
+        return ''
 
     try:
         res = tr_res[0][0].get('tgt')
         # res = search('[][].tgt', tr_res)
     except Exception as exc:  # pragma: no cover
-        LOGGER.error(exc)
-        res = str(exc)
+        # LOGGER.error(str(exc)[:20])
+        LOGGER.error('resp.text: %s, tr_res: %s, exc: %s', resp.text, tr_res, exc)
+        # res = str(exc)
+        LOGGER.warning('No valid data obtained: maybe bacause free quota exceeded or IP blocked: %s', str(jdata)[:200])
+        # return str(jdata)
+        LOGGER.warning('Returning empty string ['']')
+        return ''
     return ''.join(res)
 
 
@@ -200,7 +216,8 @@ def test_1():
 def test_de():
     '''test de'''
     text = 'Dies ist ein Test'
-    assert youdao_tr(text) == '这是测试'
+    res = youdao_tr(text)
+    assert '这是' in res and '测试' in res
 
 
 def test_fr():
@@ -226,6 +243,20 @@ def pressure_test():
     for _ in trange(50):
         text = 'test ' + str(randint(0, maxsize))
         assert youdao_tr(text)[:2] in ['测试', ]
+
+
+def test_fix():
+    ''' test youdao_tr('test 123', 'zh', 'en') fix
+
+    zh -> zh-CHS OK
+    '''
+    try:
+        youdao_tr('test 123', 'zh', 'en')
+        assert 1
+    except Exception as exc:
+        assert 0, str(exc)
+        print('print: ', exc)  # pytest -s  # to display
+        LOGGER.info('LOGGER.info: %s', exc)  # pytest --log-cli-level=10
 
 
 def main():  # pragma: no cover
