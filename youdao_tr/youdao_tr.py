@@ -37,10 +37,10 @@ COOKIES = {  # pylint: disable=duplicate-key
 
     "OUTFOX_SEARCH_USER_ID": "833225052@10.169.0.83",  # from devtools
 
-        # 'JSESSIONID': 'aaaS-VdjFju2I-Vb2FZAw',
-        # 'OUTFOX_SEARCH_USER_ID_NCOO': '1386887341.1391568',
-        # '___rl__test__cookies': salt,
-    }
+    # 'JSESSIONID': 'aaaS-VdjFju2I-Vb2FZAw',
+    # 'OUTFOX_SEARCH_USER_ID_NCOO': '1386887341.1391568',
+    # '___rl__test__cookies': salt,
+}
 
 # fetch a new one if this one no longer works
 # e.g. fanyijs = request.get('http://shared.ydstatic.com/fanyi/newweb/v1.0.19/scripts/newweb/fanyi.min.js').text
@@ -113,12 +113,13 @@ SESS = requests_cache.CachedSession(
 
 SESS.hooks = {'response': make_throttle_hook()}
 
+
 def youdao_tr(  # pylint: disable=too-many-locals
         text,
         from_lang='auto',
         to_lang='auto',
         timeout=(55, 66),
-    ):
+):
     '''
     youdao translate
 
@@ -132,8 +133,9 @@ def youdao_tr(  # pylint: disable=too-many-locals
         return ''
 
     salt = str(len(text))
-    sign = hashlib.md5(('fanyideskweb' + text \
-    + salt + APID).encode('utf-8')).hexdigest()
+    sign = hashlib.md5(
+        ('fanyideskweb' + text + salt + APID).encode('utf-8')
+    ).hexdigest()
 
     if from_lang in ['zh', 'zh_cn', ]:
         from_lang = 'zh-CHS'
@@ -181,7 +183,7 @@ def youdao_tr(  # pylint: disable=too-many-locals
 
     tr_res = jdata.get('translateResult')
 
-    if not str(jdata): # pragma: no cover
+    if not str(jdata):  # pragma: no cover
         LOGGER.warning('No valid data: maybe bacause free quota exceeded or IP blocked: %s', str(jdata)[:200])
         # return str(jdata)
         LOGGER.warning('Returning empty string ['']')
@@ -225,6 +227,7 @@ def test_fr():
     text = 'c\'est bon'
     assert '好' in youdao_tr(text)
 
+
 def test_random():
     ''' test random'''
     from sys import maxsize
@@ -267,7 +270,8 @@ def main():  # pragma: no cover
         print('Supply some English or Chinese text.')
         sys.exit(1)
 
-    print(youdao_tr(' '.join(sys.argv[1: ])))
+    print(youdao_tr(' '.join(sys.argv[1:])))
+
 
 if __name__ == '__main__':  # pragma: no cover
     main()
